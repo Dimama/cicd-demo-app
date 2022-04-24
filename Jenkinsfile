@@ -23,7 +23,8 @@ pipeline {
         }
         stage('Upload jar artifact') {
             steps {
-                sh '''curl -v -F maven2.groupId=cicd-demo -F maven2.asset1.extension=jar \
+                sh '''curl -v -F maven2.groupId=cicd-demo \
+                      -F maven2.asset1.extension=jar \
                       -F maven2.asset1=@target/cicd-demo-app-$PACKAGE_VERSION.jar \
                       -F maven2.artifactId=cicd-demo-app \
                       -F maven2.version=$PACKAGE_VERSION \
