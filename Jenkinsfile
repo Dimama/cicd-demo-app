@@ -40,13 +40,16 @@ pipeline {
 
         stage('Upload jar artifact') {
             steps {
-                sh '''curl -v -F maven2.groupId=cicd-demo \
-                      -F maven2.asset1.extension=jar \
-                      -F maven2.asset1=@target/cicd-demo-app-$PACKAGE_VERSION.jar \
-                      -F maven2.artifactId=cicd-demo-app \
-                      -F maven2.version=$PACKAGE_VERSION \
-                      -u admin:password http://nexus:8081/service/rest/v1/components?repository=maven-dev
-                '''
+                withCredentials([usernamePassword(credentialsId: 'NEXUS_USER', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh '''curl -v -F maven2.groupId=cicd-demo \
+                        -F maven2.asset1.extension=jar \
+                        -F maven2.asset1=@target/cicd-demo-app-$PACKAGE_VERSION.jar \
+                        -F maven2.artifactId=cicd-demo-app \
+                        -F maven2.version=$PACKAGE_VERSION \
+                        -u $USERNAME:$PASSWORD http://nexus:8081/service/rest/v1/components?repository=maven-dev
+                    '''
+                }
+
             }
         }
 
@@ -61,10 +64,13 @@ pipeline {
                 TAG = "${params.DOCKER_TAG}"
             }
             steps {
-                sh 'docker build -t demo-app:$TAG .'
-                sh 'docker tag demo-app:latest localhost:5000/demo/demo-app:$TAG'
-                sh 'docker login --username admin --password password localhost:5000/repository/demo'
-                sh 'docker push localhost:5000/demo/demo-app:$TAG'
+                withCredentials([usernamePassword(credentialsId: 'NEXUS_USER', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'docker build -t demo-app:$TAG .'
+                    sh 'docker tag demo-app:latest localhost:5000/demo/demo-app:$TAG'
+                    sh 'docker login --username $USERNAME --password $PASSWORD localhost:5000/repository/demo'
+                    sh 'docker push localhost:5000/demo/demo-app:$TAG'
+                }
+
             }
         }
     }
