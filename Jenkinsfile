@@ -25,7 +25,6 @@ pipeline {
     }
 
     stages {
-
         stage('Run tests') {
             steps {
                 sh 'mvn test'
@@ -56,7 +55,7 @@ pipeline {
         stage('Docker build and push') {
             when {
                 anyOf {
-                    branch 'develop'
+                    branch 'master'
                     expression { params.DOCKER_BUILD == 'yes' }
                 }
             }
