@@ -7,7 +7,7 @@ pipeline {
     //     dockerTool 'docker'
     // }
     environment {
-            PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
+        PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
     }
     stages {
 
