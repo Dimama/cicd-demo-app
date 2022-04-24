@@ -3,12 +3,27 @@ pipeline {
         label 'mvn_agent'
     }
     
-    // tools {
-    //     dockerTool 'docker'
-    // }
+    parameters {
+        choice (
+            name: 'DOCKER_BUILD',
+            choices: ['no', 'yes'],
+            description: 'Shall we build and push docker image'
+        )
+        string (
+            name: 'DOCKER_TAG',
+            defaultValue: 'latest',
+            description: 'Tag of docker image'
+        )
+    }
+
+    tools {
+        dockerTool 'docker'
+    }
+
     environment {
         PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
     }
+
     stages {
 
         stage('Run tests') {
@@ -16,11 +31,13 @@ pipeline {
                 sh 'mvn test'
             }
         }
+
         stage('Build maven') {
             steps {
                 sh 'mvn package -Drevision=$PACKAGE_VERSION -Dapp=cicd-demo-app -Dmaven.test.skip=true'
             }
         }
+
         stage('Upload jar artifact') {
             steps {
                 sh '''curl -v -F maven2.groupId=cicd-demo \
@@ -32,15 +49,26 @@ pipeline {
                 '''
             }
         }
-        // stage('docker') {
-        //     steps {
-        //         sh 'docker build -t demo-app:latest .'
-        //         sh 'docker tag demo-app:latest localhost:5000/demo/demo-app:latest'
-        //         sh 'docker login --username admin --password password localhost:5000/repository/demo'
-        //         sh 'docker push localhost:5000/demo/demo-app:latest'
-        //     }
-        // }
+
+        stage('Docker build and push') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    expression { params.DOCKER_BUILD == 'yes' }
+                }
+            }
+            environment {
+                TAG = "${params.DOCKER_TAG}"
+            }
+            steps {
+                sh 'docker build -t demo-app:$TAG .'
+                sh 'docker tag demo-app:latest localhost:5000/demo/demo-app:$TAG'
+                sh 'docker login --username admin --password password localhost:5000/repository/demo'
+                sh 'docker push localhost:5000/demo/demo-app:$TAG'
+            }
+        }
     }
+
     post {
         always {
             junit 'target/surefire-reports/**/*.xml'
