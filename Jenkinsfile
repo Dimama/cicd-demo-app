@@ -9,8 +9,10 @@ pipeline {
     
     stages {
         stage('test') {
-            sh 'env'
-            sh 'mvn test'
+            steps {
+                sh 'env'
+                sh 'mvn test'
+            }
         }
         // stage('git') {
         //     steps {
