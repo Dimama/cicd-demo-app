@@ -12,12 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * A very basic Hello World controller which returns the hostname.
- *
- * @author kim
- *
- */
+
 @RestController
 public class HelloWorldController {
 
