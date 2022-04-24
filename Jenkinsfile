@@ -8,6 +8,9 @@ pipeline {
     // }
     
     stages {
+        environment {
+            PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
+        }
         stage('Run tests') {
             steps {
                 sh 'mvn test'
@@ -15,15 +18,19 @@ pipeline {
         }
         stage('Build maven') {
             steps {
-                sh 'mvn package -Drevision=$GIT_BRANCH-$GIT_COMMIT -Dapp=cicd-demo-app-new -Dmaven.test.skip=true'
+                sh 'mvn package -Drevision=$PACKAGE_VERSION -Dapp=cicd-demo-app -Dmaven.test.skip=true'
             }
         }
-        // stage('upload artifact') {
-        //     steps {
-        //         sh '''curl -v -F maven2.groupId=cicd-demo -F maven2.asset1.extension=jar -F maven2.asset1=@target/cicd-demo-app-new-1.0.0.jar -F maven2.artifactId=cicd-demo-app -F maven2.version=1.0.0 -u admin:password http://nexus:8081/service/rest/v1/components?repository=maven-dev
-        //         '''
-        //     }
-        // }
+        stage('upload artifact') {
+            steps {
+                sh '''curl -v -F maven2.groupId=cicd-demo -F maven2.asset1.extension=jar \
+                      -F maven2.asset1=@target/cicd-demo-app-$PACKAGE_VERSION.jar \
+                      -F maven2.artifactId=cicd-demo-app \
+                      -F maven2.version=1.0.0 \
+                      -u admin:password http://nexus:8081/service/rest/v1/components?repository=maven-dev
+                '''
+            }
+        }
         // stage('docker') {
         //     steps {
         //         sh 'docker build -t demo-app:latest .'
