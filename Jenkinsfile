@@ -3,6 +3,19 @@ pipeline{
         label 'mvn_agent'
     }
 
+    parameters {
+        choice (
+            name: 'DOCKER_BUILD',
+            choices: ['no', 'yes'],
+            description: 'Shall we build and push docker image'
+        )
+        string (
+            name: 'DOCKER_TAG',
+            defaultValue: 'latest',
+            description: 'Tag of docker image'
+        )
+    }
+
     environment {
         PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
     }
@@ -43,11 +56,15 @@ pipeline{
 
         stage('Docker build and push') {
             when {
-                branch 'master'
+                anyOf {
+                    branch 'master'
+                    expression { params.DOCKER_BUILD == 'yes' }
+                }
+                
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'NEXUS_CRED', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]){
-                    sh 'docker build -t demo-app:latest'
+                    sh 'docker build -t demo-app:latest .'
                     sh 'docker tag demo-app:latest localhost:5000/demo/demo-app:latest'
                     sh 'docker login --username $USERNAME --password $PASSWORD localhost:5000/repository/demo'
                     sh 'docker push localhost:5000/demo/demo-app:latest'
