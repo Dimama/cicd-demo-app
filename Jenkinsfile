@@ -3,9 +3,9 @@ pipeline{
         label 'mvn_agent'
     }
     stages{
-        stage('hello') {
+        stage('Run tests') {
             steps {
-                echo 'hello world'
+                sh 'mvn test'
             }
         }
     }
