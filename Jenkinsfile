@@ -3,8 +3,10 @@ pipeline{
         label 'mvn_agent'
     }
     stages{
-        steps {
-            echo 'hello world'
+        stage {
+            steps {
+                echo 'hello world'
+            }
         }
     }
     post{
