@@ -3,7 +3,7 @@ pipeline{
         label 'mvn_agent'
     }
     stages{
-        stage {
+        stage('hello') {
             steps {
                 echo 'hello world'
             }
