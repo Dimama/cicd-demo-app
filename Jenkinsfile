@@ -63,6 +63,11 @@ pipeline{
             }
             steps {
                 sh 'docker build -t demo-app:$TAG .'
+                sh 'docker tag demo-app:$TAG localhost:5000/demo/demo-app:$TAG'
+                withCredentials([usernamePassword(credentialsId: 'NEXUS_CRED', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    sh 'docker login --username $USERNAME --password $PASSWORD localhost:5000/repository/demo'
+                }
+                sh 'docker push localhost:5000/demo/demo-app:$TAG'
             }
         }
     }
