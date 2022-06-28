@@ -2,9 +2,23 @@ pipeline{
     agent{
         label "mvn_agent"
     }
+
+    parameters {
+        string (
+            name: 'DOCKER_TAG',
+            defaultValue: 'latest',
+            description: 'Tag of docker image'
+        )
+    }
+
     environment {
         PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
     }
+
+    tools {
+        dockerTool 'docker'
+    }
+
     stages{
         stage("Run tests"){
             steps{
@@ -29,6 +43,15 @@ pipeline{
                         http://nexus:8081/service/rest/v1/components?repository=maven-dev
                     '''
                 }
+            }
+        }
+
+        stage("Docker build and push") {
+            environment {
+                TAG = "${params.DOCKER_TAG}"
+            }
+            steps {
+                sh 'docker build -t demo-app:$TAG .'
             }
         }
     }
