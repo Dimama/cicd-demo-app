@@ -9,6 +9,11 @@ pipeline{
             defaultValue: 'latest',
             description: 'Tag of docker image'
         )
+        choice (
+            name: 'DOCKER_BUILD',
+            choices: ['no', 'yes'],
+            description: 'Shall we build and push docker image'
+        )
     }
 
     environment {
@@ -47,6 +52,12 @@ pipeline{
         }
 
         stage("Docker build and push") {
+            when {
+                anyOf {
+                    branch 'master'
+                    expression { params.DOCKER_BUILD == 'yes' }
+                }
+            }
             environment {
                 TAG = "${params.DOCKER_TAG}"
             }
