@@ -11,7 +11,7 @@ pipeline {
         
         stage("Build maven"){
             environment {
-                PACKAGE_VERSION = "${GIT_BRANCH}-{GIT_COMMIT}"
+                PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
             }
             steps {
                 sh 'mvn package -Dmaven.test.skip=true -Dapp=cicd-demo-app -Drevision=$PACKAGE_VERSION'
