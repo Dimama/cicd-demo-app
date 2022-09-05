@@ -5,9 +5,24 @@ pipeline {
     environment {
         PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
     }
+
+    parameters {
+        choice (
+            name: 'DOCKER_BUILD',
+            choices: ['no', 'yes'],
+            description: 'Shall we build docker image'
+        )
+
+        string (
+            name: 'DOCKER_TAG',
+            defaultValue: 'latest',
+            description: 'Tag of docker image'
+        )
+    }
     tools {
         dockerTool 'docker'
     }
+
     stages{
         stage("Run tests"){
             steps{
@@ -38,15 +53,20 @@ pipeline {
 
         stage("Docker build and push"){
             when {
-                branch 'master'
+                anyOf {
+                    branch 'master'
+                    expression { params.DOCKER_BUILD = 'yes' }
+                }
             }
-
+            environment {
+                TAG = "${params.DOCKER_TAG}"
+            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'NEXUS_USER', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]){
-                    sh 'docker build -t demo-app:latest .'
-                    sh 'docker tag demo-app:latest localhost:5000/demo/demo-app:latest'
+                    sh 'docker build -t demo-app:$TAG .'
+                    sh 'docker tag demo-app:$TAG localhost:5000/demo/demo-app:$TAG'
                     sh 'docker login --username $USERNAME --password $PASSWORD localhost:5000/repository/demo'
-                    sh 'docker push localhost:5000/demo/demo-app:latest'
+                    sh 'docker push localhost:5000/demo/demo-app:$TAG'
                 }
             }
         }
