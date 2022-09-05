@@ -55,7 +55,7 @@ pipeline {
             when {
                 anyOf {
                     branch 'master'
-                    expression { params.DOCKER_BUILD = 'yes' }
+                    expression { params.DOCKER_BUILD == 'yes' }
                 }
             }
             environment {
