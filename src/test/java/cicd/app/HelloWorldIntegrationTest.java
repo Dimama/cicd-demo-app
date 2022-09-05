@@ -40,6 +40,6 @@ public class HelloWorldIntegrationTest {
         result = response.getBody();
 
         assertThat(result.containsKey(MESSAGE_KEY)).isTrue();
-        assertThat(result.get(MESSAGE_KEY)).isEqualTo("Hello World!!!");
+        assertThat(result.get(MESSAGE_KEY)).isEqualTo("Hello World!");
     }
 }
