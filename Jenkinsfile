@@ -21,7 +21,7 @@ pipeline {
 
         stage("Upload jar artifact") {
             steps {
-                withCredentials([usernamePassowerd(credentialsId: 'NEXUS_USER', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]){
+                withCredentials([usernamePassword(credentialsId: 'NEXUS_USER', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]){
                     sh '''curl -v -F maven2.groupId=cicd-demo \
                         -F maven2.asset1.extension=jar \
                         -F maven2.asset1=@target/cicd-demo-app-$PACKAGE_VERSION.jar \
