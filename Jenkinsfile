@@ -5,6 +5,9 @@ pipeline {
     environment {
         PACKAGE_VERSION = "${GIT_BRANCH}-${GIT_COMMIT}"
     }
+    tools {
+        dockerTool 'docker'
+    }
     stages{
         stage("Run tests"){
             steps{
@@ -29,6 +32,21 @@ pipeline {
                         -F maven2.version=$PACKAGE_VERSION \
                         -u $USERNAME:$PASSWORD http://nexus:8081/service/rest/v1/components?repository=maven-dev
                     '''
+                }
+            }
+        }
+
+        stage("Docker build and push"){
+            when {
+                branch 'master'
+            }
+
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'NEXUS_USER', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]){
+                    sh 'docker build -t demo-app:latest .'
+                    sh 'docker tag demo-app:latest localhost:5000/demo/demo-app:latest'
+                    sh 'docker login --username $USERNAME --password $PASSWORD localhost:5000/repository/demo'
+                    sh 'docker push localhost:5000/demo/demo-app:latest'
                 }
             }
         }
